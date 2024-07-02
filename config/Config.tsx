@@ -4,13 +4,13 @@ import { getDatabase } from "firebase/database";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDCsynZepPniUAWQsOwP5YLEuiV8jUKZxc",
-  authDomain: "app-login-13c72.firebaseapp.com",
-  databaseURL: "https://app-login-13c72-default-rtdb.firebaseio.com",
-  projectId: "app-login-13c72",
-  storageBucket: "app-login-13c72.appspot.com",
-  messagingSenderId: "580578977514",
-  appId: "1:580578977514:web:ed511726ac53a4ba9e1993"
+  apiKey: "AIzaSyDt68HPP-fO4EXNhiQgqzRiwedi0wAK5Zk",
+  authDomain: "app-1-45d7b.firebaseapp.com",
+  databaseURL: "https://app-1-45d7b-default-rtdb.firebaseio.com",
+  projectId: "app-1-45d7b",
+  storageBucket: "app-1-45d7b.appspot.com",
+  messagingSenderId: "890984403517",
+  appId: "1:890984403517:web:f2b87e4c8d6e3911cc1054"
 };
 
 // Initialize Firebase
