@@ -1,89 +1,99 @@
-import { Alert, Button, FlatList, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
-//-- FIREBASE
-import { ref, set, onValue, update, remove } from "firebase/database";
+import { Alert, FlatList, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ref, set, onValue, update, remove } from 'firebase/database';
 import { db } from '../config/Config';
+import Tarjeta from '../Components/Tarjeta';
 
 // Definir el tipo Usuario
 type Usuario = {
-    key: string,
-    name: string,
-    email: string,
-    coment: string
+    key: string;
+    name: string;
+    email: string;
+    coment: string;
 };
 
 export default function UsuarioScreen() {
-    const [cedula, setcedula] = useState<string>("");
-    const [nombre, setnombre] = useState<string>("");
-    const [correo, setcorreo] = useState<string>("");
-    const [comentario, setcomentario] = useState<string>("");
-    const [editando, seteditando] = useState<boolean>(false);
-    const [usuarios, setusuarios] = useState<Usuario[]>([]);
+    const [cedula, setCedula] = useState<string>("");
+    const [nombre, setNombre] = useState<string>("");
+    const [correo, setCorreo] = useState<string>("");
+    const [comentario, setComentario] = useState<string>("");
+    const [editando, setEditando] = useState<boolean>(false);
+    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
 
-    //-------- GUARDAR/EDITAR ----------//
+    // Guardar/Editar 
     function guardarUsuario() {
         if (editando) {
-            update(ref(db, 'usuarios/' + cedula), {
+            update(ref(db, `usuarios/${cedula}`), {
                 name: nombre,
                 email: correo,
                 coment: comentario
+            }).then(() => {
+                Alert.alert("Mensaje", "Información editada");
+            }).catch(error => {
+                Alert.alert("Error", error.message);
             });
-            Alert.alert("Mensaje", "Información actualizada");
         } else {
-            set(ref(db, 'usuarios/' + cedula), {
+            set(ref(db, `usuarios/${cedula}`), {
                 name: nombre,
                 email: correo,
                 coment: comentario
+            }).then(() => {
+                Alert.alert("Mensaje", "Información guardada");
+            }).catch(error => {
+                Alert.alert("Error", error.message);
             });
-            Alert.alert("Mensaje", "Información guardada");
         }
-
         limpiarFormulario();
     }
 
-    function limpiarFormulario() {
-        setcedula('');
-        setnombre('');
-        setcorreo('');
-        setcomentario('');
-        seteditando(false);
-    }
-
-    // ---- LEER --------------------//
-    useEffect(() => {
-        const starCountRef = ref(db, 'usuarios/');
-        onValue(starCountRef, (snapshot) => {
-            const data = snapshot.val();
-
-            const dataTemp: Usuario[] = Object.keys(data).map((key) => ({
-                key, ...data[key]
-            }));
-
-            setusuarios(dataTemp);
-        });
-    }, []);
-
-    // ---- EDITAR -------------------//
+    // Editar usuario
     function editarUsuario(usuario: Usuario) {
-        setcedula(usuario.key);
-        setnombre(usuario.name);
-        setcorreo(usuario.email);
-        setcomentario(usuario.coment);
-        seteditando(true);
+        setCedula(usuario.key);
+        setNombre(usuario.name);
+        setCorreo(usuario.email);
+        setComentario(usuario.coment);
+        setEditando(true);
     }
 
-    //------ ELIMINAR -----------------//
+    // Eliminar usuario
     function eliminarUsuario(key: string) {
-        remove(ref(db, 'usuarios/' + key))
+        remove(ref(db, `usuarios/${key}`))
             .then(() => {
                 Alert.alert("Mensaje", "Usuario eliminado");
-                // Actualizar la lista de usuarios localmente después de eliminar
-                setusuarios(usuarios.filter(usuario => usuario.key !== key));
+                setUsuarios(usuarios.filter(usuario => usuario.key !== key));
             })
             .catch(error => {
                 Alert.alert("Error", error.message);
             });
     }
+
+    // Limpiar formulario
+    function limpiarFormulario() {
+        setCedula('');
+        setNombre('');
+        setCorreo('');
+        setComentario('');
+        setEditando(false);
+    }
+
+    // Leer usuarios
+    useEffect(() => {
+        const starCountRef = ref(db, 'usuarios/');
+        onValue(starCountRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const dataTemp: Usuario[] = Object.keys(data).map(key => ({
+                    key,
+                    name: data[key].name,
+                    email: data[key].email,
+                    coment: data[key].coment
+                }));
+                setUsuarios(dataTemp);
+            } else {
+                setUsuarios([]);
+            }
+        });
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -91,28 +101,27 @@ export default function UsuarioScreen() {
             <TextInput
                 placeholder='Ingresar cédula'
                 style={styles.input}
-                onChangeText={(texto) => setcedula(texto)}
+                onChangeText={texto => setCedula(texto)}
                 value={cedula}
                 keyboardType='numeric'
             />
-
             <TextInput
                 placeholder='Ingresar nombre'
                 style={styles.input}
-                onChangeText={(texto) => setnombre(texto)}
+                onChangeText={texto => setNombre(texto)}
                 value={nombre}
             />
             <TextInput
                 placeholder='Ingresar correo'
                 style={styles.input}
-                onChangeText={(texto) => setcorreo(texto)}
+                onChangeText={texto => setCorreo(texto)}
                 keyboardType='email-address'
                 value={correo}
             />
             <TextInput
                 placeholder='Ingresar comentario'
-                style={styles.input}
-                onChangeText={(texto) => setcomentario(texto)}
+                style={[styles.input, { height: 100 }]}
+                onChangeText={texto => setComentario(texto)}
                 value={comentario}
                 multiline
             />
@@ -122,7 +131,7 @@ export default function UsuarioScreen() {
 
             <FlatList
                 data={usuarios}
-                renderItem={({ item }: { item: Usuario }) =>
+                renderItem={({ item }) => (
                     <View style={styles.userCard}>
                         <Text style={styles.userText}><Text style={styles.boldText}>Cédula:</Text> {item.key}</Text>
                         <Text style={styles.userText}><Text style={styles.boldText}>Nombre:</Text> {item.name}</Text>
@@ -136,9 +145,10 @@ export default function UsuarioScreen() {
                                 <Text style={styles.actionButtonText}>Editar</Text>
                             </TouchableOpacity>
                         </View>
+                        <Tarjeta usuario={item} />
                     </View>
-                }
-                keyExtractor={(item) => item.key}
+                )}
+                keyExtractor={item => item.key}
             />
             <StatusBar />
         </View>
